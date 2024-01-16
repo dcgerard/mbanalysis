@@ -2,7 +2,6 @@ library(tidyverse)
 library(menbayes)
 library(doFuture)
 library(doRNG)
-library(polymapR)
 
 ## Set up parallelization ----
 #  R CMD BATCH '--args nc=8' sims.R
@@ -117,7 +116,7 @@ outdf <- foreach(
     pardf$stat_chisq[[i]] <- nout$statistic
 
     ## old polymapr ----
-    pout <- polymapr_test(x = x, g1 = pardf$ell1[[i]], g2 = pardf$ell2[[i]], type = "polymapR")
+    pout <- polymapr_test(x = x, g1 = pardf$ell1[[i]], g2 = pardf$ell2[[i]], type = "menbayes")
     pardf$p_polymapr[[i]] <- pout$p_value
 
     ## new bayes ----
