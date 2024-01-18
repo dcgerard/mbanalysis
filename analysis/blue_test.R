@@ -99,7 +99,7 @@ outdf <- foreach(i = seq_len(dim(gl)[[1]]), .combine = rbind, .export = c("blue_
 
   ## Fit polmapr test
   gp <- exp(glmat - apply(X = glmat, MARGIN = 1, FUN = updog::log_sum_exp))
-  pout <- polymapr_test(x = gp, g1 = p1, g2 = p2, type = "polymapR")
+  pout <- polymapr_test(x = gp, g1 = p1, g2 = p2, type = "menbayes")
   blue_df$polymapr_pvalue[[i]] <- pout$p_value
 
   blue_df[i, ]

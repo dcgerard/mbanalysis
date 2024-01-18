@@ -22,7 +22,7 @@ if (nc == 1) {
 drbound <- 1/6
 pardf <- expand_grid(
   seed = 1:200,
-  n = c(25, 100),
+  n = c(20, 200),
   ell1 = 0:2,
   ell2 = 1:2,
   alpha_c = c("0", "1/12", "1/6"),

@@ -28,8 +28,8 @@ colnames(sizemat)[1:2] <- c("sweetcrisp", "indigocrisp")
 sizemat <- as.matrix(sizemat)
 
 ## Run multidog
-mout <- multidog(refmat = altmat_1,
-                 sizemat = sizemat_1,
+mout <- multidog(refmat = altmat,
+                 sizemat = sizemat,
                  ploidy = 4,
                  model = "f1pp",
                  p1_id = "sweetcrisp",

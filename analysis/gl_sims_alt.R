@@ -3,7 +3,7 @@ library(menbayes)
 
 pardf <- expand_grid(
   seed = 1:200,
-  n = c(25, 100),
+  n = c(20, 200),
   rd = 10)
 
 qvec <- rep(1/5, 5)
