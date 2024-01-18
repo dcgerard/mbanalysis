@@ -13,7 +13,8 @@ null_sim_figs = ./output/sims/plots/qq_chisq_g.pdf \
                 ./output/sims/plots/box_lbf_gl.pdf
 
 alt_sim_figs = ./output/sims/plots/t1e.tex \
-               ./output/sims/plots/alt_p_box.pdf
+               ./output/sims/plots/alt_p_box.pdf \
+               ./output/sims/plots/alt_lbf_box.pdf
 
 .PHONY : all
 all : sims blue
@@ -33,7 +34,7 @@ $(alt_sim_figs) : ./analysis/alt_plots.R ./output/sims/g_altsims.csv ./output/si
 	mkdir -p $(@D)
 	$(rexec) $< $(rout)/$(basename $(<F)).Rout
 
-./output/sims/gsims.csv : ./analysis/g_sims.R 
+./output/sims/gsims.csv : ./analysis/g_sims.R
 	mkdir -p $(rout)
 	mkdir -p $(@D)
 	$(rexec) '--args nc=$(nc)' $< $(rout)/$(basename $(<F)).Rout

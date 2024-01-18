@@ -29,6 +29,22 @@ ggsave(
 
 df |>
   mutate(Condition = paste0("n=", n, ",rd=", rd)) |>
+  select(Condition, lbf) |>
+  ggplot(aes(x = Condition, y = lbf)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0, lty = 2, col = 2) +
+  theme_bw() ->
+  pl
+
+ggsave(
+  filename = "./output/sims/plots/alt_lbf_box.pdf",
+  plot = pl,
+  height = 3,
+  width = 4,
+  family = "Times")
+
+df |>
+  mutate(Condition = paste0("n=", n, ",rd=", rd)) |>
   select(Condition, LRT = p_lrt, Chisq = p_chisq, polymapR = p_polymapr) |>
   pivot_longer(cols = c("LRT", "Chisq", "polymapR"), names_to = "Method", values_to = "P-value") |>
   group_by(Condition, Method) |>
