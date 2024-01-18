@@ -33,7 +33,8 @@ df |>
   ggplot(aes(x = Condition, y = lbf)) +
   geom_boxplot() +
   geom_hline(yintercept = 0, lty = 2, col = 2) +
-  theme_bw() ->
+  theme_bw() +
+  ylab("Log Bayes Factor") ->
   pl
 
 ggsave(
