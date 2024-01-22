@@ -30,28 +30,23 @@ if (nc == 1) {
   }
 }
 
-## Remove 0/0 and 4/4 and 0/4 and 4/0 parental genotype scenarios
-bluefits <- filter_snp(
-  x = bluefits,
-  expr = !(ell1 == 0 & ell2 == 0 |
-             ell1 == 0 & ell2 == 4 |
-             ell1 == 4 & ell2 == 0 |
-             ell1 == 4 & ell2 == 4)
-)
-
 ## This will give you an array with dimensions SNPs by Individuals by Genotypes
 gl <- format_multidog(bluefits, varname = paste0("logL_", 0:4))
-p1vec <- bluefits$snpdf$ell1
-p2vec <- bluefits$snpdf$ell2
+p1mat <- gl[, "indigocrisp", ]
+p2mat <- gl[, "sweetcrisp", ]
+gl <- gl[, setdiff(dimnames(gl)[[2]], c("indigocrisp", "sweetcrisp")), ]
 
 ##Build dataframe
-blue_df <- data.frame(snp = dimnames(gl)[[1]], p1 = p1vec, p2 = p2vec)
+blue_df <- data.frame(snp = dimnames(gl)[[1]])
+blue_df$p1 <- NA_real_
+blue_df$p2 <- NA_real_
 blue_df$lbf <- NA_real_
 blue_df$pm_alpha <- NA_real_
 blue_df$pm_xi1 <- NA_real_
 blue_df$pm_xi2 <- NA_real_
 blue_df$chisq_stat <- NA_real_
 blue_df$chisq_pvalue <- NA_real_
+blue_df$lrt_df <- NA_real_
 blue_df$lrt_stat <- NA_real_
 blue_df$lrt_pvalue <- NA_real_
 blue_df$lrt_alpha <- NA_real_
@@ -68,8 +63,8 @@ outdf <- foreach(i = seq_len(dim(gl)[[1]]), .combine = rbind, .export = c("blue_
   glmat <- gl[i , ,]
   goodind <- apply(glmat, 1, function(x) all(!is.na(x)))
   glmat <- glmat[goodind, , drop = FALSE]
-  p1 <- p1vec[[i]]
-  p2 <- p2vec[[i]]
+  p1 <- p1mat[i, ]
+  p2 <- p2mat[i, ]
 
   ## Fit Bayes test here
   bout <- bayes_men_gl4(gl = glmat, g1 = p1, g2 = p2, chains = 1)
@@ -81,7 +76,10 @@ outdf <- foreach(i = seq_len(dim(gl)[[1]]), .combine = rbind, .export = c("blue_
 
   ## Fit LRT
   lout <- lrt_men_gl4(gl = glmat, g1 = p1, g2 = p2)
+  blue_df$p1 <- lout$p1
+  blue_df$p2 <- lout$p2
   blue_df$lrt_stat <- lout$statistic
+  blue_df$lrt_df <- lout$df
   blue_df$lrt_pvalue <- lout$p_value
   blue_df$lrt_alpha <- lout$alpha
   blue_df$lrt_xi1 <- lout$xi1
@@ -93,13 +91,15 @@ outdf <- foreach(i = seq_len(dim(gl)[[1]]), .combine = rbind, .export = c("blue_
   blue_df$lrtnn_pvalue <- lnnout$p_value
 
   ## Fit chi-squared test
-  cout <- chisq_gl4(gl = glmat, g1 = p1, g2 = p2)
-  blue_df$chisq_pvalue <- cout$p_value
-  blue_df$chisq_stat <- cout$statistic
+  if (!(lout$p1 %in% c(0, 4) && lout$p2 %in% c(0, 4))) {
+    cout <- chisq_gl4(gl = glmat, g1 = lout$p1, g2 = lout$p2)
+    blue_df$chisq_pvalue <- cout$p_value
+    blue_df$chisq_stat <- cout$statistic
+  }
 
   ## Fit polmapr test
   gp <- exp(glmat - apply(X = glmat, MARGIN = 1, FUN = updog::log_sum_exp))
-  pout <- polymapr_test(x = gp, g1 = p1, g2 = p2, type = "menbayes")
+  pout <- polymapr_test(x = gp, g1 = lout$p1, g2 = lout$p2, type = "menbayes")
   blue_df$polymapr_pvalue[[i]] <- pout$p_value
 
   blue_df[i, ]

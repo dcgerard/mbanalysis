@@ -31,9 +31,7 @@ sizemat <- as.matrix(sizemat)
 mout <- multidog(refmat = altmat,
                  sizemat = sizemat,
                  ploidy = 4,
-                 model = "f1pp",
-                 p1_id = "sweetcrisp",
-                 p2_id = "indigocrisp",
+                 model = "norm",
                  nc = nc)
 
 saveRDS(object = mout, file = "./output/blue/bluefits.RDS")

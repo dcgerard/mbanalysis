@@ -16,6 +16,11 @@ alt_sim_figs = ./output/sims/plots/t1e.tex \
                ./output/sims/plots/alt_p_box.pdf \
                ./output/sims/plots/alt_lbf_box.pdf
 
+blue_figs = ./output/blue/plots/pairs.pdf \
+            ./output/blue/plots/polystrong.pdf \
+            ./output/blue/plots/lrtstrong.pdf \
+            ./output/blue/plots/tensnps.tex
+
 .PHONY : all
 all : sims blue
 
@@ -57,7 +62,7 @@ $(alt_sim_figs) : ./analysis/alt_plots.R ./output/sims/g_altsims.csv ./output/si
 ## Blueberries ----
 
 .PHONY : blue
-blue : ./output/blue/blue_df.csv
+blue : $(blue_figs)
 
 ./output/blue/bluefits.RDS : ./analysis/blue_up.R
 	mkdir -p $(rout)
@@ -68,3 +73,8 @@ blue : ./output/blue/blue_df.csv
 	mkdir -p $(rout)
 	mkdir -p $(@D)
 	$(rexec) '--args nc=$(nc)' $< $(rout)/$(basename $(<F)).Rout
+
+$(blue_figs) : ./analysis/blue_plots.R ./output/blue/blue_df.csv
+	mkdir -p $(rout)
+	mkdir -p $(@D)
+	$(rexec) $< $(rout)/$(basename $(<F)).Rout
