@@ -89,10 +89,11 @@ pdf(file = "./output/blue/plots/pairs.pdf", height = 4, width = 4, family = "Tim
 gpairs_lower(pl)
 dev.off()
 
-## Plot SNPs where LRT indicates reject but polymapR indicates no reject ----
+## lrt no reject, polymapr reject
 bdf_nm |>
-  filter(lrt_pvalue > 0.99, polymapr_pvalue < 0.01) |>
+  filter(lrt_pvalue > 0.80, polymapr_pvalue < 0.01) |>
   arrange(polymapr_pvalue) |>
+  slice(-c(1, 2)) |>
   select(snp, p1, p2, lbf, lrt_pvalue, polymapr_pvalue) ->
   polystrong
 
@@ -119,7 +120,7 @@ ggsave(
 
 ## lrt reject, polymapr no reject ----
 bdf_nm |>
-  filter(lrt_pvalue < 0.05, polymapr_pvalue > 0.95) |>
+  filter(lrt_pvalue < 0.05, polymapr_pvalue > 0.80) |>
   arrange(lrt_pvalue) |>
   select(snp, p1, p2, lbf, lrt_pvalue, polymapr_pvalue)  ->
   lrtstrong
@@ -144,30 +145,58 @@ ggsave(
   height = 6,
   family = "Times")
 
-## Table of polystrong and lrtstrong top SNPs
-bind_rows(lrtstrong[1:5, ], polystrong[1:5, ]) |>
-  rename(LRT = lrt_pvalue, polymapR = polymapr_pvalue, Bayes = lbf, SNP = snp, ell1 = p1, ell2 = p2) |>
-  xtable(
-    display = rep("g", ncol(lrtstrong) + 1),
-    label = "tab:blue.diff",
-    caption = 'In the first five SNPs (plotted in Figure \\ref{fig:lrt.strong}), the LRT indicates segregation distortion while the \\textsf{polymapR} test indicates no segregation distortion, while in the last five SNPs (plotted in Figure \\ref{fig:poly.strong}) the LRT indicates no segregation distortion while the \\textsf{polymapR} test indicates segregation distortion. Parent genotypes (ell1 and ell2) are listed, along with the log Bayes factors (Bayes), the LRT $p$-values ("LRT"), and the \\textsf{polyampR} $p$-values ("polymapR").') |>
-  print(include.rownames = FALSE,
-        file = "./output/blue/plots/tensnps.tex")
-
 ## re-check those SNPs with polymapR
-gp <- format_multidog(x = uout, varname = paste0("Pr_", 0:4))
-gp <- gp[, setdiff(dimnames(gp)[[2]], c("sweetcrisp", "indigocrisp")), ]
 gl <- format_multidog(x = uout, varname = paste0("logL_", 0:4))
 gl <- gl[, setdiff(dimnames(gl)[[2]], c("sweetcrisp", "indigocrisp")), ]
 genomat <- format_multidog(x = uout, varname = "geno")
 
-i <- 5
-gpmat <- gp[polystrong$snp[[i]], , ]
-glmat <- gl[polystrong$snp[[i]], , ]
-geno <- unlist(genomat[polystrong$snp[[i]], ])
-polymapr_test(x = gpmat, g1 = polystrong$p1[[i]], g2 = polystrong$p2[[i]], type = "polymapR")$p_value
-polymapr_test(x = gpmat, g1 = polystrong$p1[[i]], g2 = polystrong$p2[[i]], type = "menbayes")$p_value
+lrtstrong$Observed <- vector(mode = "list", length = nrow(lrtstrong))
+lrtstrong$Expected <- vector(mode = "list", length = nrow(lrtstrong))
+polystrong$Observed <- vector(mode = "list", length = nrow(polystrong))
+polystrong$Expected <- vector(mode = "list", length = nrow(polystrong))
 
-lrt_men_gl4(gl = glmat, g1 = polystrong$p1[[i]], g2 = polystrong$p2[[i]])$p_value
+for (i in 1:5) {
+  glmat <- gl[polystrong$snp[[i]], , ]
+  gpmat <- exp(glmat - apply(X = glmat, MARGIN = 1, FUN = updog::log_sum_exp))
+  geno <- unlist(genomat[polystrong$snp[[i]], ])
+  pout1 <- polymapr_test(x = gpmat, g1 = polystrong$p1[[i]], g2 = polystrong$p2[[i]], type = "polymapR")
+  pout2 <- polymapr_test(x = gpmat, g1 = polystrong$p1[[i]], g2 = polystrong$p2[[i]], type = "menbayes")
+  lrtout <- lrt_men_gl4(gl = glmat, g1 = polystrong$p1[[i]], g2 = polystrong$p2[[i]])
+  polystrong$Observed[[i]] <- table(factor(geno, levels = 0:4))
+  attributes(polystrong$Observed[[i]]) <- NULL
+  polystrong$Expected[[i]] <- offspring_gf_2(alpha = lrtout$alpha, xi1 = lrtout$xi1, xi2 = lrtout$xi2, p1 = polystrong$p1[[i]], p2 = polystrong$p2[[i]]) * length(geno)
 
-table(geno)
+  cat("   LRT:", lrtout$p_value, "\n",
+      "Poly1:", pout1$p_value, "\n",
+      "Poly2:", pout2$p_value, "\n\n")
+
+  glmat <- gl[lrtstrong$snp[[i]], , ]
+  gpmat <- exp(glmat - apply(X = glmat, MARGIN = 1, FUN = updog::log_sum_exp))
+  geno <- unlist(genomat[lrtstrong$snp[[i]], ])
+  pout1 <- polymapr_test(x = gpmat, g1 = lrtstrong$p1[[i]], g2 = lrtstrong$p2[[i]], type = "polymapR")
+  if (i != 2) { ## polymapR errors on this one
+    pout2 <- polymapr_test(x = gpmat, g1 = lrtstrong$p1[[i]], g2 = lrtstrong$p2[[i]], type = "menbayes")
+  } else {
+    pout2 <- list()
+  }
+  lrtout <- lrt_men_gl4(gl = glmat, g1 = lrtstrong$p1[[i]], g2 = lrtstrong$p2[[i]])
+  lrtstrong$Observed[[i]] <- table(factor(geno, levels = 0:4))
+  attributes(lrtstrong$Observed[[i]]) <- NULL
+  lrtstrong$Expected[[i]] <- offspring_gf_2(alpha = lrtout$alpha, xi1 = lrtout$xi1, xi2 = lrtout$xi2, p1 = lrtstrong$p1[[i]], p2 = lrtstrong$p2[[i]]) * length(geno)
+
+    cat("   LRT:", lrtout$p_value, "\n",
+      "Poly1:", pout1$p_value, "\n",
+      "Poly2:", pout2$p_value, "\n\n")
+}
+
+## Table of polystrong and lrtstrong top SNPs
+bind_rows(lrtstrong[1:5, ], polystrong[1:5, ]) |>
+  mutate(Observed = paste0("(", map_chr(Observed, \(x) paste0(x, collapse = ",")), ")")) |>
+  mutate(Expected = paste0("(", map_chr(Expected, \(x) paste0(round(x, digits = 1), collapse = ",")), ")")) |>
+  rename(LRT = lrt_pvalue, polymapR = polymapr_pvalue, Bayes = lbf, SNP = snp, ell1 = p1, ell2 = p2) |>
+  xtable(
+    display = rep("g", ncol(lrtstrong) + 1),
+    label = "tab:blue.diff",
+    caption = 'In the first five SNPs (plotted in Figure \\ref{fig:lrt.strong}), the LRT indicates segregation distortion while the \\textsf{polymapR} test indicates no segregation distortion, while in the last five SNPs (plotted in Figure \\ref{fig:poly.strong}) the LRT indicates no segregation distortion while the \\textsf{polymapR} test indicates segregation distortion. Parent genotypes (ell1 and ell2) are listed, along with the log Bayes factors ("Bayes"), the LRT $p$-values ("LRT"), the \\textsf{polyampR} $p$-values ("polymapR"), the observed counts when tabulating posterior mode genotypes ("Observed"), and the expected counts based on the maximum likelihood estimates of $\\alpha$ and the $\\xi$\'s ("Expected").') |>
+  print(include.rownames = FALSE,
+        file = "./output/blue/plots/tensnps.tex")
