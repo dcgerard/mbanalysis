@@ -2,9 +2,9 @@
 
 [![NSF-2132247](https://img.shields.io/badge/NSF-2132247-blue.svg)](https://nsf.gov/awardsearch/showAward?AWD_ID=2132247)
 
-To reproduce the results of the thesis:
+To reproduce the results of the paper:
 
-1. Open up the mbanalysis R Project and restore the renv:
+1. Restore the `renv`:
     ``` r
     renv::restore()
     ```
