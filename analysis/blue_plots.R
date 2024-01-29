@@ -149,6 +149,7 @@ ggsave(
 gl <- format_multidog(x = uout, varname = paste0("logL_", 0:4))
 gl <- gl[, setdiff(dimnames(gl)[[2]], c("sweetcrisp", "indigocrisp")), ]
 genomat <- format_multidog(x = uout, varname = "geno")
+genomat <- genomat[, setdiff(dimnames(gl)[[2]], c("sweetcrisp", "indigocrisp"))]
 
 lrtstrong$Observed <- vector(mode = "list", length = nrow(lrtstrong))
 lrtstrong$Expected <- vector(mode = "list", length = nrow(lrtstrong))
