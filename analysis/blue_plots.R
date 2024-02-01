@@ -5,6 +5,7 @@ library(GGally)
 library(gridExtra)
 library(ggpubr)
 library(xtable)
+library(polymapR)
 
 bdf <- read_csv("./output/blue/blue_df.csv")
 uout <- readRDS("./output/blue/bluefits.RDS")
