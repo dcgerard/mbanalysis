@@ -22,7 +22,7 @@ blue_figs = ./output/blue/plots/pairs.pdf \
             ./output/blue/plots/tensnps.tex
 
 .PHONY : all
-all : sims blue
+all : sims blue hyp
 
 ## Simulations ----
 
@@ -75,6 +75,16 @@ blue : $(blue_figs)
 	$(rexec) '--args nc=$(nc)' $< $(rout)/$(basename $(<F)).Rout
 
 $(blue_figs) : ./analysis/blue_plots.R ./output/blue/blue_df.csv
+	mkdir -p $(rout)
+	mkdir -p $(@D)
+	$(rexec) $< $(rout)/$(basename $(<F)).Rout
+
+## Hypothesis plot ----
+
+.PHONY : hyp
+hyp : ./output/hyp/ternary.pdf
+
+./output/hyp/ternary.pdf : ./analysis/hypothesis_plot.R
 	mkdir -p $(rout)
 	mkdir -p $(@D)
 	$(rexec) $< $(rout)/$(basename $(<F)).Rout
