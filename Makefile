@@ -27,7 +27,7 @@ all : sims blue hyp
 ## Simulations ----
 
 .PHONY : sims
-sims : $(null_sim_figs) $(alt_sim_figs)
+sims : $(null_sim_figs) $(alt_sim_figs) ./output/sims/plots/alpha_ests.pdf
 
 $(null_sim_figs) : ./analysis/null_plots.R ./output/sims/gsims.csv ./output/sims/glsims.csv
 	mkdir -p $(rout)
@@ -58,6 +58,11 @@ $(alt_sim_figs) : ./analysis/alt_plots.R ./output/sims/g_altsims.csv ./output/si
 	mkdir -p $(rout)
 	mkdir -p $(@D)
 	$(rexec) '--args nc=$(nc)' $< $(rout)/$(basename $(<F)).Rout
+
+./output/sims/plots/alpha_ests.pdf : ./analysis/null_plot_ests.R ./output/sims/gsims.csv ./output/sims/glsims.csv
+	mkdir -p $(rout)
+	mkdir -p $(@D)
+	$(rexec) $< $(rout)/$(basename $(<F)).Rout
 
 ## Blueberries ----
 
