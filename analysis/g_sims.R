@@ -84,6 +84,12 @@ pardf$alpha_bayes <- NA_real_
 pardf$xi1_bayes <- NA_real_
 pardf$xi2_bayes <- NA_real_
 
+## other bayes priors
+pardf$lbf_1 <- NA_real_
+pardf$lbf_2 <- NA_real_
+pardf$lbf_3 <- NA_real_
+pardf$lbf_4 <- NA_real_
+
 ## Run simulations
 outdf <- foreach(
   i = seq_len(nrow(pardf)),
@@ -127,6 +133,60 @@ outdf <- foreach(
     pardf$alpha_bayes[[i]] <- bout$alpha
     pardf$xi1_bayes[[i]] <- bout$xi1
     pardf$xi2_bayes[[i]] <- bout$xi2
+
+    # Other Prior Settings ----
+    trash <- capture.output(
+      bout_1 <- bayes_men_g4(
+        x = x,
+        g1 = pardf$ell1[[i]],
+        g2 = pardf$ell2[[i]],
+        chains = 1,
+        ts1 = 1/2,
+        ts2 = 1/2,
+        shape1 = 1,
+        shape2 = 2)
+    )
+    pardf$lbf_1 <- bout_1$lbf
+
+    trash <- capture.output(
+      bout_2 <- bayes_men_g4(
+        x = x,
+        g1 = pardf$ell1[[i]],
+        g2 = pardf$ell2[[i]],
+        chains = 1,
+        ts1 = 1/2,
+        ts2 = 1/2,
+        shape1 = 1/3,
+        shape2 = 2/3)
+    )
+    pardf$lbf_2 <- bout_2$lbf
+
+    trash <- capture.output(
+      bout_3 <- bayes_men_g4(
+        x = x,
+        g1 = pardf$ell1[[i]],
+        g2 = pardf$ell2[[i]],
+        chains = 1,
+        ts1 = 2,
+        ts2 = 2,
+        shape1 = 1,
+        shape2 = 2)
+    )
+    pardf$lbf_3 <- bout_3$lbf
+
+    trash <- capture.output(
+      bout_4 <- bayes_men_g4(
+        x = x,
+        g1 = pardf$ell1[[i]],
+        g2 = pardf$ell2[[i]],
+        chains = 1,
+        ts1 = 2,
+        ts2 = 2,
+        shape1 = 1/3,
+        shape2 = 2/3)
+    )
+    pardf$lbf_4 <- bout_4$lbf
+
 
     pardf[i, ]
   }

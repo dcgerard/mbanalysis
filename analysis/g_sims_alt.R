@@ -29,6 +29,12 @@ pardf$alpha_bayes <- NA_real_
 pardf$xi1_bayes <- NA_real_
 pardf$xi2_bayes <- NA_real_
 
+## other bayes priors
+pardf$lbf_1 <- NA_real_
+pardf$lbf_2 <- NA_real_
+pardf$lbf_3 <- NA_real_
+pardf$lbf_4 <- NA_real_
+
 for (i in seq_len(nrow(pardf))) {
   cat(i, " of ", nrow(pardf), "\n")
   g1 <- 2
@@ -62,6 +68,60 @@ for (i in seq_len(nrow(pardf))) {
   pardf$alpha_bayes[[i]] <- bout$alpha
   pardf$xi1_bayes[[i]] <- bout$xi1
   pardf$xi2_bayes[[i]] <- bout$xi2
+
+  # Other Prior Settings ----
+  trash <- capture.output(
+    bout_1 <- bayes_men_g4(
+      x = x,
+      g1 = g1,
+      g2 = g2,
+      chains = 1,
+      ts1 = 1/2,
+      ts2 = 1/2,
+      shape1 = 1,
+      shape2 = 2)
+  )
+  pardf$lbf_1 <- bout_1$lbf
+
+  trash <- capture.output(
+    bout_2 <- bayes_men_g4(
+      x = x,
+      g1 = g1,
+      g2 = g2,
+      chains = 1,
+      ts1 = 1/2,
+      ts2 = 1/2,
+      shape1 = 1/3,
+      shape2 = 2/3)
+  )
+  pardf$lbf_2 <- bout_2$lbf
+
+  trash <- capture.output(
+    bout_3 <- bayes_men_g4(
+      x = x,
+      g1 = g1,
+      g2 = g2,
+      chains = 1,
+      ts1 = 2,
+      ts2 = 2,
+      shape1 = 1,
+      shape2 = 2)
+  )
+  pardf$lbf_3 <- bout_3$lbf
+
+  trash <- capture.output(
+    bout_4 <- bayes_men_g4(
+      x = x,
+      g1 = g1,
+      g2 = g2,
+      chains = 1,
+      ts1 = 2,
+      ts2 = 2,
+      shape1 = 1/3,
+      shape2 = 2/3)
+  )
+  pardf$lbf_4 <- bout_4$lbf
+
 }
 
 write_csv(x = pardf, file = "./output/sims/g_altsims.csv")
