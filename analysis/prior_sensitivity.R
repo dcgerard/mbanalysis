@@ -149,5 +149,5 @@ ggsave(
   filename = "./output/sims/plots/alt_lbf_box_p.pdf",
   plot = pl,
   height = 3,
-  width = 4,
+  width = 6,
   family = "Times")

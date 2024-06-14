@@ -146,7 +146,7 @@ outdf <- foreach(
         shape1 = 1,
         shape2 = 2)
     )
-    pardf$lbf_1 <- bout_1$lbf
+    pardf$lbf_1[[i]] <- bout_1$lbf
 
     trash <- capture.output(
       bout_2 <- bayes_men_g4(
@@ -159,7 +159,7 @@ outdf <- foreach(
         shape1 = 1/3,
         shape2 = 2/3)
     )
-    pardf$lbf_2 <- bout_2$lbf
+    pardf$lbf_2[[i]] <- bout_2$lbf
 
     trash <- capture.output(
       bout_3 <- bayes_men_g4(
@@ -172,7 +172,7 @@ outdf <- foreach(
         shape1 = 1,
         shape2 = 2)
     )
-    pardf$lbf_3 <- bout_3$lbf
+    pardf$lbf_3[[i]] <- bout_3$lbf
 
     trash <- capture.output(
       bout_4 <- bayes_men_g4(
@@ -185,7 +185,7 @@ outdf <- foreach(
         shape1 = 1/3,
         shape2 = 2/3)
     )
-    pardf$lbf_4 <- bout_4$lbf
+    pardf$lbf_4[[i]] <- bout_4$lbf
 
 
     pardf[i, ]
