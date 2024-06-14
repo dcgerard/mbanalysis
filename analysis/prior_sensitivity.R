@@ -2,6 +2,7 @@ library(tidyverse)
 library(scales)
 pal <- palette.colors(n = 7, palette = "Okabe-Ito", recycle = FALSE, names = FALSE)[-c(5, 6)]
 
+## Null Plots
 gdf <- read_csv("./output/sims/gsims.csv")
 gdf$rd <- Inf
 gldf <- read_csv("./output/sims/glsims.csv")
@@ -115,4 +116,38 @@ ggsave(
   plot = pl,
   height = 6,
   width = 6,
+  family = "Times")
+
+## Alt Plots
+gdf <- read_csv("./output/sims/g_altsims.csv")
+gldf <- read_csv("./output/sims/gl_altsims.csv")
+
+gdf$rd <- "Inf"
+gldf$rd <- "10"
+
+df <- bind_rows(gdf, gldf)
+
+df |>
+  mutate(Condition = paste0("n=", n, ",rd=", rd)) |>
+  pivot_longer(cols = starts_with("lbf"), names_to = "Prior", values_to = "lbf") |>
+  mutate(Prior = recode(Prior,
+                        "lbf" = "Default",
+                        "lbf_1" = "(1/2,1/2),(1,2)",
+                        "lbf_2" = "(1/2,1/2),(1/3,2/3)",
+                        "lbf_3" = "(2,2),(1,2)",
+                        "lbf_4" = "(2,2),(1/3,2/3)")) |>
+  select(Condition, Prior, lbf) |>
+  ggplot(aes(x = Condition, y = lbf, color = Prior)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0, lty = 2, col = 2) +
+  theme_bw() +
+  ylab("Log Bayes Factor") +
+  scale_color_manual(values = pal) ->
+  pl
+
+ggsave(
+  filename = "./output/sims/plots/alt_lbf_box_p.pdf",
+  plot = pl,
+  height = 3,
+  width = 4,
   family = "Times")

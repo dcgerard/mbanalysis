@@ -27,7 +27,8 @@ blue_figs = ./output/blue/plots/pairs.pdf \
 bayes_figs = ./output/sims/plots/box_lbf_p_g_20.pdf \
                       ./output/sims/plots/box_lbf_p_g_200.pdf \
                       ./output/sims/plots/box_lbf_p_gl_20.pdf \
-                      ./output/sims/plots/box_lbf_p_gl_200.pdf
+                      ./output/sims/plots/box_lbf_p_gl_200.pdf \
+                      ./output/sims/plots/alt_lbf_box_p.pdf
 
 .PHONY : all
 all : sims blue hyp
@@ -72,7 +73,7 @@ $(alt_sim_figs) : ./analysis/alt_plots.R ./output/sims/g_altsims.csv ./output/si
 	mkdir -p $(@D)
 	$(rexec) $< $(rout)/$(basename $(<F)).Rout
 
-$(bayes_figs) : ./analysis/prior_sensitivity.R ./output/sims/gsims.csv ./output/sims/glsims.csv
+$(bayes_figs) : ./analysis/prior_sensitivity.R ./output/sims/gsims.csv ./output/sims/glsims.csv ./output/sims/g_altsims.csv ./output/sims/gl_altsims.csv
 	mkdir -p $(rout)
 	mkdir -p $(@D)
 	$(rexec) $< $(rout)/$(basename $(<F)).Rout
