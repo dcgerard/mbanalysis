@@ -23,6 +23,10 @@ blue_figs = ./output/blue/plots/pairs.pdf \
             ./output/blue/plots/lrtstrong.pdf \
             ./output/blue/plots/tensnps.tex
 
+## Blueberry estimation figs
+blue_est = ./output/blue/plots/tukey_p1.pdf \
+           ./output/blue/plots/tukey_p2.pdf
+
 ## Prior sensitivity figs
 bayes_figs = ./output/sims/plots/box_lbf_p_g_20.pdf \
                       ./output/sims/plots/box_lbf_p_g_200.pdf \
@@ -81,7 +85,7 @@ $(bayes_figs) : ./analysis/prior_sensitivity.R ./output/sims/gsims.csv ./output/
 ## Blueberries ----
 
 .PHONY : blue
-blue : $(blue_figs)
+blue : $(blue_figs) $(blue_est)
 
 ./output/blue/bluefits.RDS : ./analysis/blue_up.R
 	mkdir -p $(rout)
@@ -94,6 +98,11 @@ blue : $(blue_figs)
 	$(rexec) '--args nc=$(nc)' $< $(rout)/$(basename $(<F)).Rout
 
 $(blue_figs) : ./analysis/blue_plots.R ./output/blue/blue_df.csv
+	mkdir -p $(rout)
+	mkdir -p $(@D)
+	$(rexec) $< $(rout)/$(basename $(<F)).Rout
+
+$(blue_est) : ./analysis/blue_ests.R ./output/blue/blue_df.csv
 	mkdir -p $(rout)
 	mkdir -p $(@D)
 	$(rexec) $< $(rout)/$(basename $(<F)).Rout
