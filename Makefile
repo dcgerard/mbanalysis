@@ -29,10 +29,10 @@ blue_est = ./output/blue/plots/tukey_p1.pdf \
 
 ## Prior sensitivity figs
 bayes_figs = ./output/sims/plots/box_lbf_p_g_20.pdf \
-                      ./output/sims/plots/box_lbf_p_g_200.pdf \
-                      ./output/sims/plots/box_lbf_p_gl_20.pdf \
-                      ./output/sims/plots/box_lbf_p_gl_200.pdf \
-                      ./output/sims/plots/alt_lbf_box_p.pdf
+             ./output/sims/plots/box_lbf_p_g_200.pdf \
+             ./output/sims/plots/box_lbf_p_gl_20.pdf \
+             ./output/sims/plots/box_lbf_p_gl_200.pdf \
+             ./output/sims/plots/alt_lbf_box_p.pdf
 
 .PHONY : all
 all : sims blue hyp
