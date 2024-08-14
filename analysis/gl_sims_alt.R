@@ -1,12 +1,27 @@
 library(tidyverse)
 library(menbayes)
+library(doFuture)
+library(doRNG)
 
+# Create data frame of alternatives
+np <- 6
+df_alt <- expand.grid(
+  p0 = seq(0, 1, length.out = np),
+  p1 = seq(0, 1, length.out = np),
+  p2 = seq(0, 1, length.out = np)) |>
+  filter(p0 + p1 + p2 == 1) |>
+  filter(!(p0 == p2 & p1 > 0.5),
+         !(p0 == 0 & p1 == 0 & p2 == 1),
+         !(p0 == 0 & p1 == 1 & p2 == 0),
+         !(p0 == 1 & p1 == 0 & p2 == 0))
+df_alt$name <- paste0("alt_", 1:nrow(df_alt))
+
+## Create simulation data frame
 pardf <- expand_grid(
   seed = 1:200,
   n = c(20, 200),
+  alt = c("unif", "random", df_alt$name),
   rd = 10)
-
-qvec <- rep(1/5, 5)
 
 ## new lrt params
 pardf$p_lrt <- NA_real_
@@ -41,15 +56,33 @@ pardf$lbf_2 <- NA_real_
 pardf$lbf_3 <- NA_real_
 pardf$lbf_4 <- NA_real_
 
-for (i in seq_len(nrow(pardf))) {
+outdf <- foreach(
+  i = seq_len(nrow(pardf)),
+  .combine = rbind,
+  .export = c("pardf")) %dorng% {
   cat(i, " of ", nrow(pardf), "\n")
-  g1 <- 2
-  g2 <- 2
+
+  if (pardf$alt[[i]] == "unif") {
+    qvec <- rep(1/5, 5)
+  } else if (pardf$alt[[i]] == "random") {
+    qvec <- stats::rexp(n = 5, rate = 1)
+    qvec <- qvec / sum(qvec)
+  } else {
+    p0 <- df_alt$p0[df_alt$name == pardf$alt[[i]]]
+    p1 <- df_alt$p1[df_alt$name == pardf$alt[[i]]]
+    p2 <- df_alt$p2[df_alt$name == pardf$alt[[i]]]
+    pvec <- c(p0, p1, p2)
+    qvec <- stats::convolve(pvec, rev(pvec), type = "open")
+    qvec[qvec < 0] <- 0 # for -1e-17
+  }
+
   x <- c(stats::rmultinom(n = 1, size = pardf$n[[i]], prob = qvec))
   gl <- hwep::simgl(nvec = x, rdepth = pardf$rd[[i]], ret = "gl")
 
   ## new lrt ----
-  tout <- lrt_men_gl4(gl = gl, g1 = g1, g2 = g2)
+  tout <- lrt_men_gl4(gl = gl, g1 = NULL, g2 = NULL)
+  g1 <- tout$p1
+  g2 <- tout$p2
   pardf$p_lrt[[i]] <- tout$p_value
   pardf$stat_lrt[[i]] <- tout$statistic
   pardf$df_lrt[[i]] <- tout$df
@@ -135,6 +168,13 @@ for (i in seq_len(nrow(pardf))) {
       shape2 = 2/3)
   )
   pardf$lbf_4[[i]] <- bout_4$lbf
+
+  pardf[i, ]
 }
 
-write_csv(x = pardf, file = "./output/sims/gl_altsims.csv")
+## Unregister workers ----
+if (nc > 1) {
+  plan(sequential)
+}
+
+write_csv(x = outdf, file = "./output/sims/gl_altsims.csv")

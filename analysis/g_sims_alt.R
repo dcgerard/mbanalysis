@@ -1,11 +1,40 @@
 library(tidyverse)
 library(menbayes)
+library(doFuture)
+library(doRNG)
 
+## Set up parallelization ----
+registerDoFuture()
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) == 0) {
+  nc <- 1
+} else {
+  eval(parse(text = args[[1]]))
+}
+if (nc == 1) {
+  plan("sequential")
+} else {
+  plan("multisession", workers = nc)
+}
+
+# Create data frame of alternatives
+np <- 6
+df_alt <- expand.grid(
+  p0 = seq(0, 1, length.out = np),
+  p1 = seq(0, 1, length.out = np),
+  p2 = seq(0, 1, length.out = np)) |>
+  filter(p0 + p1 + p2 == 1) |>
+  filter(!(p0 == p2 & p1 > 0.5),
+         !(p0 == 0 & p1 == 0 & p2 == 1),
+         !(p0 == 0 & p1 == 1 & p2 == 0),
+         !(p0 == 1 & p1 == 0 & p2 == 0))
+df_alt$name <- paste0("alt_", 1:nrow(df_alt))
+
+## Create simulation data frame
 pardf <- expand_grid(
   seed = 1:200,
-  n = c(20, 200))
-
-qvec <- rep(1/5, 5)
+  n = c(20, 200),
+  alt = c("unif", "random", df_alt$name))
 
 ## new lrt params
 pardf$p_lrt <- NA_real_
@@ -35,14 +64,51 @@ pardf$lbf_2 <- NA_real_
 pardf$lbf_3 <- NA_real_
 pardf$lbf_4 <- NA_real_
 
-for (i in seq_len(nrow(pardf))) {
+# ML approach when don't know parent genotypes
+lrt_men_g4_unknown_parents <- function(x) {
+  llmin <- Inf
+  for (g1 in 0:4) {
+    for (g2 in g1:4) {
+      lnow <- lrt_men_g4(x = x, g1 = g1, g2 = g2)
+      if (lnow$statistic < llmin) {
+        lfinal <- lnow
+        lfinal$g1 <- g1
+        lfinal$g2 <- g2
+        llmin <- lfinal$statistic
+      }
+    }
+  }
+  return(lfinal)
+}
+
+## Run simulations ----
+outdf <- foreach(
+  i = seq_len(nrow(pardf)),
+  .combine = rbind,
+  .export = c("pardf")) %dorng% {
   cat(i, " of ", nrow(pardf), "\n")
-  g1 <- 2
-  g2 <- 2
+
+  if (pardf$alt[[i]] == "unif") {
+    qvec <- rep(1/5, 5)
+  } else if (pardf$alt[[i]] == "random") {
+    qvec <- stats::rexp(n = 5, rate = 1)
+    qvec <- qvec / sum(qvec)
+  } else {
+    p0 <- df_alt$p0[df_alt$name == pardf$alt[[i]]]
+    p1 <- df_alt$p1[df_alt$name == pardf$alt[[i]]]
+    p2 <- df_alt$p2[df_alt$name == pardf$alt[[i]]]
+    pvec <- c(p0, p1, p2)
+    qvec <- stats::convolve(pvec, rev(pvec), type = "open")
+    qvec[qvec < 0] <- 0 # for -1e-17
+  }
+
   x <- c(stats::rmultinom(n = 1, size = pardf$n[[i]], prob = qvec))
 
   ## new lrt ----
-  tout <- lrt_men_g4(x = x, g1 = g1, g2 = g2)
+  tout <- lrt_men_g4_unknown_parents(x = x)
+  g1 <- tout$g1
+  g2 <- tout$g2
+
   pardf$p_lrt[[i]] <- tout$p_value
   pardf$stat_lrt[[i]] <- tout$statistic
   pardf$df_lrt[[i]] <- tout$df
@@ -122,6 +188,12 @@ for (i in seq_len(nrow(pardf))) {
   )
   pardf$lbf_4[[i]] <- bout_4$lbf
 
+  pardf[i, ]
+  }
+
+## Unregister workers ----
+if (nc > 1) {
+  plan(sequential)
 }
 
-write_csv(x = pardf, file = "./output/sims/g_altsims.csv")
+write_csv(x = outdf, file = "./output/sims/g_altsims.csv")
