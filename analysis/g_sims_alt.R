@@ -67,10 +67,11 @@ pardf$lbf_4 <- NA_real_
 # ML approach when don't know parent genotypes
 lrt_men_g4_unknown_parents <- function(x) {
   llmin <- Inf
+  lfinal <- list(p_value = 0, g1 = NA, g2 = NA)
   for (g1 in 0:4) {
     for (g2 in g1:4) {
       lnow <- lrt_men_g4(x = x, g1 = g1, g2 = g2)
-      if (lnow$statistic < llmin) {
+      if (lnow$statistic <= llmin) {
         lfinal <- lnow
         lfinal$g1 <- g1
         lfinal$g2 <- g2
@@ -83,12 +84,13 @@ lrt_men_g4_unknown_parents <- function(x) {
 
 chisq_unknown_parents <- function(x) {
   pval <- 0
+  lfinal <- list(p_value = 0, g1 = NA, g2 = NA)
   for (g1 in 0:4) {
     for (g2 in g1:4) {
       suppressWarnings(
         lnow <- chisq_g4(x = x, g1 = g1, g2 = g2)
       )
-      if (lnow$p_value > pval) {
+      if (lnow$p_value >= pval) {
         lfinal <- lnow
         lfinal$g1 <- g1
         lfinal$g2 <- g2
@@ -123,7 +125,6 @@ outdf <- foreach(
   i = seq_len(nrow(pardf)),
   .combine = rbind,
   .export = c("pardf")) %dorng% {
-  cat(i, " of ", nrow(pardf), "\n")
 
   if (pardf$alt[[i]] == "unif") {
     qvec <- rep(1/5, 5)

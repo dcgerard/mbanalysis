@@ -58,6 +58,7 @@ pardf$lbf_4 <- NA_real_
 
 chisq_gl_unknown_parents <- function(gl) {
   pval<- 0
+  lfinal <- list(p_value = 0, g1 = NA, g2 = NA)
   for (g1 in 0:4) {
     for (g2 in g1:4) {
       suppressWarnings(
@@ -78,7 +79,6 @@ outdf <- foreach(
   i = seq_len(nrow(pardf)),
   .combine = rbind,
   .export = c("pardf")) %dorng% {
-  cat(i, " of ", nrow(pardf), "\n")
 
   if (pardf$alt[[i]] == "unif") {
     qvec <- rep(1/5, 5)
