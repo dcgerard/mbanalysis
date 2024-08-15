@@ -41,7 +41,7 @@ all : sims blue hyp
 ## Simulations ----
 
 .PHONY : sims
-sims : $(null_sim_figs) $(alt_sim_figs) ./output/sims/plots/alpha_ests.pdf $(bayes_figs)
+sims : $(null_sim_figs) $(alt_sim_figs) ./output/sims/plots/alpha_ests.pdf $(bayes_figs) ./output/sims/roc_plot.pdf
 
 $(null_sim_figs) : ./analysis/null_plots.R ./output/sims/gsims.csv ./output/sims/glsims.csv
 	mkdir -p $(rout)
@@ -79,6 +79,11 @@ $(alt_sim_figs) : ./analysis/alt_plots.R ./output/sims/g_altsims.csv ./output/si
 	$(rexec) $< $(rout)/$(basename $(<F)).Rout
 
 $(bayes_figs) : ./analysis/prior_sensitivity.R ./output/sims/gsims.csv ./output/sims/glsims.csv ./output/sims/g_altsims.csv ./output/sims/gl_altsims.csv
+	mkdir -p $(rout)
+	mkdir -p $(@D)
+	$(rexec) $< $(rout)/$(basename $(<F)).Rout
+
+./output/sims/roc_plot.pdf : ./analysis/roc_plot.R ./output/sims/g_altsims.csv ./output/sims/gl_altsims.csv ./output/sims/gsims.csv ./output/sims/glsims.csv
 	mkdir -p $(rout)
 	mkdir -p $(@D)
 	$(rexec) $< $(rout)/$(basename $(<F)).Rout

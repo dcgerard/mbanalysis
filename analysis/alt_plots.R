@@ -64,7 +64,8 @@ df_roc |>
   xlab("Stated Significance Level") +
   theme_bw() +
   theme(strip.background = element_rect(fill = "white"),
-        axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+        axis.text.x = element_text(angle = 90, vjust = 0.5),
+        strip.text = element_text(size = 6)) +
   scale_color_manual(values = pal) ->
   pl
 
@@ -88,7 +89,8 @@ df_roc |>
   xlab("Stated Significance Level") +
   theme_bw() +
   theme(strip.background = element_rect(fill = "white"),
-        axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+        axis.text.x = element_text(angle = 90, vjust = 0.5),
+        strip.text = element_text(size = 6)) +
   scale_color_manual(values = pal) ->
   pl
 
@@ -112,7 +114,8 @@ df_roc |>
   xlab("Stated Significance Level") +
   theme_bw() +
   theme(strip.background = element_rect(fill = "white"),
-        axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+        axis.text.x = element_text(angle = 90, vjust = 0.5),
+        strip.text = element_text(size = 6)) +
   scale_color_manual(values = pal) ->
   pl
 
@@ -136,7 +139,8 @@ df_roc |>
   xlab("Stated Significance Level") +
   theme_bw() +
   theme(strip.background = element_rect(fill = "white"),
-        axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+        axis.text.x = element_text(angle = 90, vjust = 0.5),
+        strip.text = element_text(size = 6)) +
   scale_color_manual(values = pal) ->
   pl
 
