@@ -1942,7 +1942,7 @@
       "RemoteUsername": "dcgerard",
       "RemoteRepo": "menbayes",
       "RemoteRef": "main",
-      "RemoteSha": "5d7ce59730b1a3ceaf1bf6ababc262d89656c287",
+      "RemoteSha": "41fe276ece613a7ffd07bd03750937ad5171818a",
       "RemoteHost": "api.github.com",
       "Requirements": [
         "BH",
@@ -1959,7 +1959,7 @@
         "rstantools",
         "updog"
       ],
-      "Hash": "8f72398be55bb2f90dba92c81c9cda1d"
+      "Hash": "514690e35fd414ca18c4130a848c3d61"
     },
     "mgcv": {
       "Package": "mgcv",
