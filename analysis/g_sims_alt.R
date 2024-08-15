@@ -103,13 +103,13 @@ chisq_unknown_parents <- function(x) {
 
 # polymapr_unknown_parents <- function(x) {
 #   pval <- 0
-#   for (g1 in 1:3) {
+#   for (g1 in 0:4) {
 #     for (g2 in 0:4) {
 #       lnow <- try(polymapr_test(x = x, g1 = g1, g2 = g2, type = "menbayes"), silent = TRUE)
 #       if("try-error" %in% class(lnow)) {
 #         lnow <- list(p_value = 0, p_invalid = 0)
 #       }
-#       if (lnow$p_value * lnow$p_invalid > pval) {
+#       if (lnow$p_value * lnow$p_invalid >= pval) {
 #         lfinal <- lnow
 #         lfinal$g1 <- g1
 #         lfinal$g2 <- g2
@@ -161,8 +161,12 @@ outdf <- foreach(
   pardf$stat_chisq[[i]] <- nout$statistic
 
   ## old polymapr ----
-  pout <- polymapr_test(x = x, g1 = g1, g2 = g2, type = "menbayes")
-  pardf$p_polymapr[[i]] <- pout$p_value
+  pout <- try(polymapr_test(x = x, g1 = g1, g2 = g2, type = "menbayes"), silent = TRUE)
+  if("try-error" %in% class(pout)) {
+    pardf$p_polymapr[[i]] <- NA_real_
+  } else {
+    pardf$p_polymapr[[i]] <- pout$p_value
+  }
 
   ## new bayes ----
   trash <- capture.output(
