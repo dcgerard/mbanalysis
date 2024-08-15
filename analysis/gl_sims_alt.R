@@ -56,6 +56,24 @@ pardf$lbf_2 <- NA_real_
 pardf$lbf_3 <- NA_real_
 pardf$lbf_4 <- NA_real_
 
+chisq_gl_unknown_parents <- function(gl) {
+  pval<- 0
+  for (g1 in 0:4) {
+    for (g2 in g1:4) {
+      suppressWarnings(
+        lnow <- chisq_gl4(gl = gl, g1 = g1, g2 = g2)
+      )
+      if (lnow$p_value > pval) {
+        lfinal <- lnow
+        lfinal$g1 <- g1
+        lfinal$g2 <- g2
+        pval <- lfinal$p_value
+      }
+    }
+  }
+  return(lfinal)
+}
+
 outdf <- foreach(
   i = seq_len(nrow(pardf)),
   .combine = rbind,
@@ -91,20 +109,20 @@ outdf <- foreach(
   pardf$xi2_lrt[[i]] <- tout$xi2
 
   ## Basic LRT ----
-  tout <- lrt_men_gl4(gl = gl, g1 = g1, g2 = g2, pp = FALSE, dr = FALSE, alpha = 0, xi1 = 1/3, xi2 = 1/3)
+  tout <- lrt_men_gl4(gl = gl, g1 = NULL, g2 = NULL, pp = FALSE, dr = FALSE, alpha = 0, xi1 = 1/3, xi2 = 1/3)
   pardf$p_lrtnn[[i]] <- tout$p_value
   pardf$stat_lrtnn[[i]] <- tout$statistic
   pardf$df_lrtnn[[i]] <- tout$df
 
   ## old chisq ----
-  nout <- chisq_gl4(gl = gl, g1 = g1, g2 = g2)
+  nout <- chisq_gl_unknown_parents(gl = gl)
   pardf$p_chisq[[i]] <- nout$p_value
   pardf$df_chisq[[i]] <- nout$df
   pardf$stat_chisq[[i]] <- nout$statistic
 
   ## old polymapr ----
   gp <- exp(gl - apply(X = gl, MARGIN = 1, FUN = updog::log_sum_exp))
-  pout <- polymapr_test(x = gp, g1 = g1, g2 = g2, type = "polymapR")
+  pout <- polymapr_test(x = gp, g1 = g1, g2 = g2, type = "menbayes")
   pardf$p_polymapr[[i]] <- pout$p_value
 
   ## Bayes test ----
