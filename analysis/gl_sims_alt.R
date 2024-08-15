@@ -137,7 +137,7 @@ outdf <- foreach(
 
   ## old polymapr ----
   gp <- exp(gl - apply(X = gl, MARGIN = 1, FUN = updog::log_sum_exp))
-  pout <- polymapr_test(x = gp, g1 = g1, g2 = g2, type = "menbayes")
+  pout <- polymapr_test(x = gp, g1 = NULL, g2 = NULL, type = "menbayes")
   pardf$p_polymapr[[i]] <- pout$p_value
 
   ## Bayes test ----
