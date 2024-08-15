@@ -162,6 +162,7 @@ outdf <- foreach(
 
   ## old polymapr ----
   pout <- polymapr_test(x = x, g1 = g1, g2 = g2, type = "menbayes")
+  pardf$p_polymapr[[i]] <- pout$p_value
 
   ## new bayes ----
   trash <- capture.output(
