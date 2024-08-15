@@ -72,13 +72,13 @@ pardf$lbf_4 <- NA_real_
 
 chisq_gl_unknown_parents <- function(gl) {
   pval<- 0
-  lfinal <- list(p_value = 0, g1 = NA, g2 = NA)
+  lfinal <- list(p_value = 0, g1 = NA, g2 = NA, df = NA, statistic = NA)
   for (g1 in 0:4) {
     for (g2 in g1:4) {
       suppressWarnings(
         lnow <- chisq_gl4(gl = gl, g1 = g1, g2 = g2)
       )
-      if (lnow$p_value > pval) {
+      if (lnow$p_value >= pval) {
         lfinal <- lnow
         lfinal$g1 <- g1
         lfinal$g2 <- g2
@@ -93,6 +93,7 @@ outdf <- foreach(
   i = seq_len(nrow(pardf)),
   .combine = rbind,
   .export = c("pardf")) %dorng% {
+  set.seed(seed = pardf$seed[[i]])
 
   if (pardf$alt[[i]] == "unif") {
     qvec <- rep(1/5, 5)
