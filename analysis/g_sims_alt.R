@@ -161,7 +161,7 @@ outdf <- foreach(
   pardf$stat_chisq[[i]] <- nout$statistic
 
   ## old polymapr ----
-  pout <- polymapr_test(x = x, g1 = g1, g2 = g2)
+  pout <- polymapr_test(x = x, g1 = g1, g2 = g2, type = "menbayes")
 
   ## new bayes ----
   trash <- capture.output(
