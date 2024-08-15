@@ -106,6 +106,7 @@ outdf <- foreach(
   i = seq_len(nrow(pardf)),
   .combine = rbind,
   .export = c("pardf")) %dorng% {
+  set.seed(pardf$seed[[i]])
 
   if (pardf$alt[[i]] == "unif") {
     qvec <- rep(1/5, 5)
