@@ -3,6 +3,20 @@ library(menbayes)
 library(doFuture)
 library(doRNG)
 
+## Set up parallelization ----
+registerDoFuture()
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) == 0) {
+  nc <- 1
+} else {
+  eval(parse(text = args[[1]]))
+}
+if (nc == 1) {
+  plan("sequential")
+} else {
+  plan("multisession", workers = nc)
+}
+
 # Create data frame of alternatives
 np <- 6
 df_alt <- expand.grid(
