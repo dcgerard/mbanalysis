@@ -120,7 +120,7 @@ outdf <- foreach(
     qvec <- stats::rexp(n = 5, rate = 1)
     qvec <- qvec / sum(qvec)
   } else {
-    qvec <- qmat[rownames(qmat) == pardf$alt[[i]], ]
+    qvec <- qmat[pardf$alt[[i]], ]
   }
 
   x <- c(stats::rmultinom(n = 1, size = pardf$n[[i]], prob = qvec))
