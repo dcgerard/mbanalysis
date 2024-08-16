@@ -28,7 +28,7 @@ qmat <- rbind(
   c(0, 3/4, 1/4, 0, 0),
   c(0, 1/4, 3/4, 0, 0))
 colnames(qmat) <- c("q0", "q1", "q2", "q3", "q4")
-as_tibble(qmat) |>
+df_alt <- as_tibble(qmat) |>
   mutate(name = str_c("alt_", 1:n())) |>
   mutate(q = str_c("(", str_c(round(q0, digits = 2), round(q1, digits = 2), round(q2, digits = 2), round(q3, digits = 2), round(q4, digits = 2), sep = ", "), ")"))
 
