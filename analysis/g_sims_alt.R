@@ -95,9 +95,19 @@ chisq_unknown_parents <- function(x) {
   lfinal <- list(p_value = 0, g1 = NA, g2 = NA)
   for (g1 in 0:4) {
     for (g2 in g1:4) {
-      suppressWarnings(
-        lnow <- chisq_g4(x = x, g1 = g1, g2 = g2)
-      )
+      if (sum(x > 0) != 1) {
+        suppressWarnings(
+          lnow <- chisq_g4(x = x, g1 = g1, g2 = g2)
+        )
+      } else if (g1 == 0 && g2 == 0 && x[[1]] > 0) {
+        lnow <- list(p_value = 1, statistic = 0, df = Inf)
+      } else if (g1 == 4 && g2 == 4 && x[[5]] > 0) {
+        lnow <- list(p_value = 1, statistic = 0, df = Inf)
+      } else if (g1 == 0 && g2 == 4 && x[[3]] > 0) {
+        lnow <- list(p_value = 1, statistic = 0, df = Inf)
+      } else {
+        lnow <- list(p_value = 0, statistic = Inf, df = Inf)
+      }
       if (lnow$p_value >= pval) {
         lfinal <- lnow
         lfinal$g1 <- g1

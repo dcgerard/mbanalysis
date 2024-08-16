@@ -12,26 +12,32 @@ df <- bind_rows(gdf, gldf)
 
 # Create data frame of alternatives
 np <- 6
-df_alt <- expand.grid(
-  p0 = seq(0, 1, length.out = np),
-  p1 = seq(0, 1, length.out = np),
-  p2 = seq(0, 1, length.out = np)) |>
-  filter(p0 + p1 + p2 == 1) |>
-  filter(!(p0 == p2 & p1 > 0.5),
-         !(p0 == 0 & p1 == 0 & p2 == 1),
-         !(p0 == 0 & p1 == 1 & p2 == 0),
-         !(p0 == 1 & p1 == 0 & p2 == 0)) |>
-  mutate(p = str_c("(", str_replace_all(str_c(p0, p1, p2, sep = ", "), "0\\.", "\\."), ")")) |>
-  mutate(q = apply(X = cbind(p0, p1, p2), MARGIN = 1, FUN = \(x) str_c("(", str_replace_all(str_c(round(stats::convolve(x, rev(x), type = "open"), digits = 2), collapse = ", "), "0\\.", "\\."), ")")))
-df_alt$name <- paste0("alt_", 1:nrow(df_alt))
+qmat <- rbind(
+  rep(0.2, 5),
+  c(1/4, 1/4, 1/4, 1/4, 0),
+  c(4/10, 3/10, 2/10, 1/10, 0),
+  c(1/10, 2/10, 3/10, 4/10, 0),
+  c(1/3, 1/3, 1/3, 0, 0),
+  c(0, 1/3, 1/3, 1/3, 0),
+  c(3/6, 2/6, 1/6, 0, 0),
+  c(0, 3/6, 2/6, 1/6, 0),
+  c(1/6, 2/6, 3/6, 0, 0),
+  c(0, 1/6, 2/6, 3/6, 0),
+  c(3/4, 1/4, 0, 0, 0),
+  c(1/4, 3/4, 0, 0, 0),
+  c(0, 3/4, 1/4, 0, 0),
+  c(0, 1/4, 3/4, 0, 0))
+colnames(qmat) <- c("q0", "q1", "q2", "q3", "q4")
+as_tibble(qmat) |>
+  mutate(name = str_c("alt_", 1:n())) |>
+  mutate(q = str_c("(", str_c(round(q0, digits = 2), round(q1, digits = 2), round(q2, digits = 2), round(q3, digits = 2), round(q4, digits = 2), sep = ", "), ")"))
 
 ## Analysis of p-values --------------------------------------------------------
 ## Vary n, rd, alt, create a power vs t1e plot
 df |>
   select(n, rd, name = alt, LRT = p_lrt, Chisq = p_chisq, polymapR = p_polymapr) |>
   left_join(df_alt, by = join_by(name)) |>
-  mutate(q = case_when(name == "unif" ~ "(.2, .2, .2, .2, .2)",
-                       name == "random" ~ "Random",
+  mutate(q = case_when(name == "random" ~ "Random",
                        TRUE ~ q)) |>
   select(n, rd, q, LRT, Chisq, polymapR) ->
   df_roc
