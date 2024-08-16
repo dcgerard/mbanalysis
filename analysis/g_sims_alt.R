@@ -19,22 +19,30 @@ if (nc == 1) {
 
 # Create data frame of alternatives
 np <- 6
-df_alt <- expand.grid(
-  p0 = seq(0, 1, length.out = np),
-  p1 = seq(0, 1, length.out = np),
-  p2 = seq(0, 1, length.out = np)) |>
-  filter(p0 + p1 + p2 == 1) |>
-  filter(!(p0 == p2 & p1 > 0.5),
-         !(p0 == 0 & p1 == 0 & p2 == 1),
-         !(p0 == 0 & p1 == 1 & p2 == 0),
-         !(p0 == 1 & p1 == 0 & p2 == 0))
-df_alt$name <- paste0("alt_", 1:nrow(df_alt))
+qmat <- rbind(
+  rep(0.2, 5),
+  c(1/4, 1/4, 1/4, 1/4, 0),
+  c(4/10, 3/10, 2/10, 1/10, 0),
+  c(1/10, 2/10, 3/10, 4/10, 0),
+  c(1/3, 1/3, 1/3, 0, 0),
+  c(0, 1/3, 1/3, 1/3, 0),
+  c(3/6, 2/6, 1/6, 0, 0),
+  c(0, 3/6, 2/6, 1/6, 0),
+  c(1/6, 2/6, 3/6, 0, 0),
+  c(0, 1/6, 2/6, 3/6, 0),
+  c(3/4, 1/4, 0, 0, 0),
+  c(1/4, 3/4, 0, 0, 0),
+  c(0, 3/4, 1/4, 0, 0),
+  c(0, 1/4, 3/4, 0, 0))
+rownames(qmat) <- paste0("alt_", 1:nrow(qmat))
+
+stopifnot(abs(rowSums(qmat) - 1) < 1e-10)
 
 ## Create simulation data frame
 pardf <- expand_grid(
   seed = 1:200,
   n = c(20, 200),
-  alt = c("unif", "random", df_alt$name))
+  alt = c("random", rownames(qmat)))
 
 ## new lrt params
 pardf$p_lrt <- NA_real_
@@ -108,18 +116,11 @@ outdf <- foreach(
   .export = c("pardf")) %dorng% {
   set.seed(pardf$seed[[i]])
 
-  if (pardf$alt[[i]] == "unif") {
-    qvec <- rep(1/5, 5)
-  } else if (pardf$alt[[i]] == "random") {
+  if (pardf$alt[[i]] == "random") {
     qvec <- stats::rexp(n = 5, rate = 1)
     qvec <- qvec / sum(qvec)
   } else {
-    p0 <- df_alt$p0[df_alt$name == pardf$alt[[i]]]
-    p1 <- df_alt$p1[df_alt$name == pardf$alt[[i]]]
-    p2 <- df_alt$p2[df_alt$name == pardf$alt[[i]]]
-    pvec <- c(p0, p1, p2)
-    qvec <- stats::convolve(pvec, rev(pvec), type = "open")
-    qvec[qvec < 0] <- 0 # for -1e-17
+    qvec <- qmat[pardf$alt[[i]], ]
   }
 
   x <- c(stats::rmultinom(n = 1, size = pardf$n[[i]], prob = qvec))

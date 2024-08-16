@@ -1939,11 +1939,11 @@
       "Version": "0.1.0",
       "Source": "GitHub",
       "RemoteType": "github",
+      "RemoteHost": "api.github.com",
       "RemoteUsername": "dcgerard",
       "RemoteRepo": "menbayes",
       "RemoteRef": "main",
-      "RemoteSha": "fbe3c079c3ea840e58963c24597fbdcf20dcf6a5",
-      "RemoteHost": "api.github.com",
+      "RemoteSha": "57ed6d912f5f14b07514adbccada28a2526e6f4b",
       "Requirements": [
         "BH",
         "R",
@@ -1959,7 +1959,7 @@
         "rstantools",
         "updog"
       ],
-      "Hash": "e6a157df1c8072cc5211a7c29a90ebc8"
+      "Hash": "81063e74e9ad072efc2e020ca94b4eb3"
     },
     "mgcv": {
       "Package": "mgcv",
