@@ -122,8 +122,3 @@ hyp : ./output/hyp/ternary.pdf
 	mkdir -p $(rout)
 	mkdir -p $(@D)
 	$(rexec) $< $(rout)/$(basename $(<F)).Rout
-
-./output/hyp/alt_studied.pdf : ./analysis/tern_alternatives.R
-	mkdir -p $(rout)
-	mkdir -p $(@D)
-	$(rexec) $< $(rout)/$(basename $(<F)).Rout
