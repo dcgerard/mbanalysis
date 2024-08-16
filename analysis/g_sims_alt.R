@@ -113,14 +113,14 @@ chisq_unknown_parents <- function(x) {
 outdf <- foreach(
   i = seq_len(nrow(pardf)),
   .combine = rbind,
-  .export = c("pardf")) %dorng% {
+  .export = c("pardf", "qmat")) %dorng% {
   set.seed(pardf$seed[[i]])
 
   if (pardf$alt[[i]] == "random") {
     qvec <- stats::rexp(n = 5, rate = 1)
     qvec <- qvec / sum(qvec)
   } else {
-    qvec <- qmat[pardf$alt[[i]], ]
+    qvec <- qmat[rownames(qmat) == pardf$alt[[i]], ]
   }
 
   x <- c(stats::rmultinom(n = 1, size = pardf$n[[i]], prob = qvec))
