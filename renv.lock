@@ -236,7 +236,7 @@
     },
     "RcppEigen": {
       "Package": "RcppEigen",
-      "Version": "0.3.4.0.0",
+      "Version": "0.3.4.0.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -245,7 +245,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "df49e3306f232ec28f1604e36a202847"
+      "Hash": "598ee071e758b5f667b0ebe83f5d5085"
     },
     "RcppParallel": {
       "Package": "RcppParallel",
@@ -713,10 +713,10 @@
     },
     "corrplot": {
       "Package": "corrplot",
-      "Version": "0.92",
+      "Version": "0.94",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "fcf11a91936fd5047b2ee9bc00595e36"
+      "Hash": "b575018abd67c252491ffce5ecb94630"
     },
     "cowplot": {
       "Package": "cowplot",
@@ -1939,11 +1939,11 @@
       "Version": "0.1.0",
       "Source": "GitHub",
       "RemoteType": "github",
-      "RemoteHost": "api.github.com",
       "RemoteUsername": "dcgerard",
       "RemoteRepo": "menbayes",
       "RemoteRef": "main",
-      "RemoteSha": "a8189db2a746a99524808573eaa977dd233a2e72",
+      "RemoteSha": "f217d9e30aa0363f288e440e517823f09c183834",
+      "RemoteHost": "api.github.com",
       "Requirements": [
         "BH",
         "R",
@@ -1959,7 +1959,7 @@
         "rstantools",
         "updog"
       ],
-      "Hash": "d06eb7f9dbf905d7f666b043efa9190b"
+      "Hash": "54d93beb83ecdb9effdbde1b3d33c594"
     },
     "mgcv": {
       "Package": "mgcv",
@@ -2028,13 +2028,13 @@
     },
     "minqa": {
       "Package": "minqa",
-      "Version": "1.2.7",
+      "Version": "1.2.8",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "Rcpp"
       ],
-      "Hash": "aba060ef3c097b26a4d304ea39d87f32"
+      "Hash": "785ef8e22389d4a7634c6c944f2dc07d"
     },
     "mitml": {
       "Package": "mitml",
@@ -2084,14 +2084,14 @@
     },
     "mvtnorm": {
       "Package": "mvtnorm",
-      "Version": "1.2-5",
+      "Version": "1.2-6",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "stats"
       ],
-      "Hash": "4d1891e59ac7a12b4e7e8a69349125f1"
+      "Hash": "b5b11e71e41d9d0eef7d8dc26903ed55"
     },
     "nlme": {
       "Package": "nlme",
@@ -2145,13 +2145,13 @@
     },
     "openssl": {
       "Package": "openssl",
-      "Version": "2.2.0",
+      "Version": "2.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "askpass"
       ],
-      "Hash": "2bcca3848e4734eb3b16103bc9aa4b8e"
+      "Hash": "c62edf62de70cadf40553e10c739049d"
     },
     "ordinal": {
       "Package": "ordinal",
@@ -2675,7 +2675,7 @@
     },
     "rmarkdown": {
       "Package": "rmarkdown",
-      "Version": "2.27",
+      "Version": "2.28",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -2694,7 +2694,7 @@
         "xfun",
         "yaml"
       ],
-      "Hash": "27f9502e1cdbfa195f94e03b0f517484"
+      "Hash": "062470668513dcda416927085ee9bdc7"
     },
     "rngtools": {
       "Package": "rngtools",
@@ -3337,15 +3337,16 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.46",
+      "Version": "0.47",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
+        "R",
         "grDevices",
         "stats",
         "tools"
       ],
-      "Hash": "00ce32f398db0415dde61abfef11300c"
+      "Hash": "36ab21660e2d095fef0d83f689e0477c"
     },
     "xml2": {
       "Package": "xml2",
