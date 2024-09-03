@@ -1,11 +1,48 @@
 library(tidyverse)
 library(menbayes)
+library(doFuture)
+library(doRNG)
 
+## Set up parallelization ----
+registerDoFuture()
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) == 0) {
+  nc <- 1
+} else {
+  eval(parse(text = args[[1]]))
+}
+if (nc == 1) {
+  plan("sequential")
+} else {
+  plan("multisession", workers = nc)
+}
+
+# Create data frame of alternatives
+np <- 6
+qmat <- rbind(
+  rep(0.2, 5),
+  c(1/4, 1/4, 1/4, 1/4, 0),
+  c(4/10, 3/10, 2/10, 1/10, 0),
+  c(1/10, 2/10, 3/10, 4/10, 0),
+  c(1/3, 1/3, 1/3, 0, 0),
+  c(0, 1/3, 1/3, 1/3, 0),
+  c(3/6, 2/6, 1/6, 0, 0),
+  c(0, 3/6, 2/6, 1/6, 0),
+  c(1/6, 2/6, 3/6, 0, 0),
+  c(0, 1/6, 2/6, 3/6, 0),
+  c(3/4, 1/4, 0, 0, 0),
+  c(1/4, 3/4, 0, 0, 0),
+  c(0, 3/4, 1/4, 0, 0),
+  c(0, 1/4, 3/4, 0, 0))
+rownames(qmat) <- paste0("alt_", 1:nrow(qmat))
+
+stopifnot(abs(rowSums(qmat) - 1) < 1e-10)
+
+## Create simulation data frame
 pardf <- expand_grid(
   seed = 1:200,
-  n = c(20, 200))
-
-qvec <- rep(1/5, 5)
+  n = c(20, 200),
+  alt = c("random", rownames(qmat)))
 
 ## new lrt params
 pardf$p_lrt <- NA_real_
@@ -35,14 +72,74 @@ pardf$lbf_2 <- NA_real_
 pardf$lbf_3 <- NA_real_
 pardf$lbf_4 <- NA_real_
 
-for (i in seq_len(nrow(pardf))) {
-  cat(i, " of ", nrow(pardf), "\n")
-  g1 <- 2
-  g2 <- 2
+# ML approach when don't know parent genotypes
+lrt_men_g4_unknown_parents <- function(x) {
+  llmin <- Inf
+  lfinal <- list(p_value = 0, g1 = NA, g2 = NA)
+  for (g1 in 0:4) {
+    for (g2 in g1:4) {
+      lnow <- lrt_men_g4(x = x, g1 = g1, g2 = g2)
+      if (lnow$statistic <= llmin) {
+        lfinal <- lnow
+        lfinal$g1 <- g1
+        lfinal$g2 <- g2
+        llmin <- lfinal$statistic
+      }
+    }
+  }
+  return(lfinal)
+}
+
+chisq_unknown_parents <- function(x) {
+  pval <- 0
+  lfinal <- list(p_value = 0, g1 = NA, g2 = NA)
+  for (g1 in 0:4) {
+    for (g2 in g1:4) {
+      if (sum(x > 0) != 1) {
+        suppressWarnings(
+          lnow <- chisq_g4(x = x, g1 = g1, g2 = g2)
+        )
+      } else if (g1 == 0 && g2 == 0 && x[[1]] > 0) {
+        lnow <- list(p_value = 1, statistic = 0, df = Inf)
+      } else if (g1 == 4 && g2 == 4 && x[[5]] > 0) {
+        lnow <- list(p_value = 1, statistic = 0, df = Inf)
+      } else if (g1 == 0 && g2 == 4 && x[[3]] > 0) {
+        lnow <- list(p_value = 1, statistic = 0, df = Inf)
+      } else {
+        lnow <- list(p_value = 0, statistic = Inf, df = Inf)
+      }
+      if (lnow$p_value >= pval) {
+        lfinal <- lnow
+        lfinal$g1 <- g1
+        lfinal$g2 <- g2
+        pval <- lfinal$p_value
+      }
+    }
+  }
+  return(lfinal)
+}
+
+## Run simulations ----
+outdf <- foreach(
+  i = seq_len(nrow(pardf)),
+  .combine = rbind,
+  .export = c("pardf", "qmat")) %dorng% {
+  set.seed(pardf$seed[[i]])
+
+  if (pardf$alt[[i]] == "random") {
+    qvec <- stats::rexp(n = 5, rate = 1)
+    qvec <- qvec / sum(qvec)
+  } else {
+    qvec <- qmat[pardf$alt[[i]], ]
+  }
+
   x <- c(stats::rmultinom(n = 1, size = pardf$n[[i]], prob = qvec))
 
   ## new lrt ----
-  tout <- lrt_men_g4(x = x, g1 = g1, g2 = g2)
+  tout <- lrt_men_g4_unknown_parents(x = x)
+  g1 <- tout$g1
+  g2 <- tout$g2
+
   pardf$p_lrt[[i]] <- tout$p_value
   pardf$stat_lrt[[i]] <- tout$statistic
   pardf$df_lrt[[i]] <- tout$df
@@ -51,13 +148,13 @@ for (i in seq_len(nrow(pardf))) {
   pardf$xi2_lrt[[i]] <- tout$xi2
 
   ## old chisq ----
-  nout <- chisq_g4(x = x, g1 = g1, g2 = g2)
+  nout <- chisq_unknown_parents(x = x)
   pardf$p_chisq[[i]] <- nout$p_value
   pardf$df_chisq[[i]] <- nout$df
   pardf$stat_chisq[[i]] <- nout$statistic
 
   ## old polymapr ----
-  pout <- polymapr_test(x = x, g1 = g1, g2 = g2, type = "polymapR")
+  pout <- polymapr_test(x = x, g1 = NULL, g2 = NULL, type = "menbayes")
   pardf$p_polymapr[[i]] <- pout$p_value
 
   ## new bayes ----
@@ -122,6 +219,12 @@ for (i in seq_len(nrow(pardf))) {
   )
   pardf$lbf_4[[i]] <- bout_4$lbf
 
+  pardf[i, ]
+  }
+
+## Unregister workers ----
+if (nc > 1) {
+  plan(sequential)
 }
 
-write_csv(x = pardf, file = "./output/sims/g_altsims.csv")
+write_csv(x = outdf, file = "./output/sims/g_altsims.csv")

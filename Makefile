@@ -13,9 +13,11 @@ null_sim_figs = ./output/sims/plots/qq_chisq_g.pdf \
                 ./output/sims/plots/box_lbf_gl.pdf
 
 ## Alt sims figs
-alt_sim_figs = ./output/sims/plots/t1e.tex \
-               ./output/sims/plots/alt_p_box.pdf \
-               ./output/sims/plots/alt_lbf_box.pdf
+alt_sim_figs = ./output/sims/alt_plots/alt_power_n20_rd10.pdf \
+               ./output/sims/alt_plots/alt_power_n200_rd10.pdf \
+               ./output/sims/alt_plots/alt_power_n20_rdInf.pdf \
+               ./output/sims/alt_plots/alt_power_n200_rdInf.pdf \
+               ./output/sims/alt_plots/alt_lbf_box.pdf
 
 ## Blueberry figs
 blue_figs = ./output/blue/plots/pairs.pdf \
@@ -31,8 +33,7 @@ blue_est = ./output/blue/plots/tukey_p1.pdf \
 bayes_figs = ./output/sims/plots/box_lbf_p_g_20.pdf \
              ./output/sims/plots/box_lbf_p_g_200.pdf \
              ./output/sims/plots/box_lbf_p_gl_20.pdf \
-             ./output/sims/plots/box_lbf_p_gl_200.pdf \
-             ./output/sims/plots/alt_lbf_box_p.pdf
+             ./output/sims/plots/box_lbf_p_gl_200.pdf
 
 .PHONY : all
 all : sims blue hyp
@@ -40,7 +41,7 @@ all : sims blue hyp
 ## Simulations ----
 
 .PHONY : sims
-sims : $(null_sim_figs) $(alt_sim_figs) ./output/sims/plots/alpha_ests.pdf $(bayes_figs)
+sims : $(null_sim_figs) $(alt_sim_figs) ./output/sims/plots/alpha_ests.pdf $(bayes_figs) ./output/sims/roc_plot.pdf
 
 $(null_sim_figs) : ./analysis/null_plots.R ./output/sims/gsims.csv ./output/sims/glsims.csv
 	mkdir -p $(rout)
@@ -78,6 +79,11 @@ $(alt_sim_figs) : ./analysis/alt_plots.R ./output/sims/g_altsims.csv ./output/si
 	$(rexec) $< $(rout)/$(basename $(<F)).Rout
 
 $(bayes_figs) : ./analysis/prior_sensitivity.R ./output/sims/gsims.csv ./output/sims/glsims.csv ./output/sims/g_altsims.csv ./output/sims/gl_altsims.csv
+	mkdir -p $(rout)
+	mkdir -p $(@D)
+	$(rexec) $< $(rout)/$(basename $(<F)).Rout
+
+./output/sims/roc_plot.pdf : ./analysis/roc_plot.R ./output/sims/g_altsims.csv ./output/sims/gl_altsims.csv ./output/sims/gsims.csv ./output/sims/glsims.csv
 	mkdir -p $(rout)
 	mkdir -p $(@D)
 	$(rexec) $< $(rout)/$(basename $(<F)).Rout
