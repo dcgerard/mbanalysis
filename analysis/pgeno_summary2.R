@@ -21,11 +21,15 @@ gldf$class <- 1
 ## Subsample Alt Sims to look like table proportions
 altprop <- 0.04
 gldf_alt |>
-  sample_n(size = round(altprop * nrow(gldf))) ->
+  group_by(n, rd) |>
+  sample_n(size = round(altprop * (nrow(gldf) / 2) / (1 - altprop))) |>
+  ungroup() ->
   gldf_alt_sub
 
 gdf_alt |>
-  sample_n(size = round(altprop * nrow(gdf))) ->
+  group_by(n, rd) |>
+  sample_n(size = round(altprop * (nrow(gdf) / 2) / (1 - altprop))) |>
+  ungroup() ->
   gdf_alt_sub
 
 # Combine
